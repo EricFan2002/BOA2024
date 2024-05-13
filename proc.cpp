@@ -35,6 +35,21 @@ struct BuyComparatorRealTime
     }
 };
 
+struct Time
+{
+    int hr;
+    int min;
+    int sec;
+    bool operator<(const Time &other) const
+    {
+        if (hr != other.hr)
+            return hr < other.hr;
+        if (min != other.min)
+            return min < other.min;
+        return sec < other.sec;
+    }
+};
+
 struct SellComparator
 {
     bool operator()(const Order *a, const Order *b)
@@ -186,6 +201,13 @@ void addTransaction(string from, string to, string stock, int amount, double pri
     t.mins = min;
     t.secs = sec;
     t.stock = stock;
+    cout << "-------------------\nTransaction Details:" << endl;
+    cout << "From: " << t.from;
+    cout << "  To: " << t.to;
+    cout << " . Stock: " << t.stock;
+    cout << " . Amount: " << t.amount;
+    cout << " . Price: " << t.price;
+    cout << " . Time: " << t.hours << ":" << t.mins << ":" << t.secs << endl;
     mTransactions.push_back(t);
 }
 
@@ -294,21 +316,21 @@ void processAllMorningTransactions(map<string, double> targetPrice)
         {
             auto &sell = sellOrdersList[thisins][sellI];
             Order *o = new Order;
-            *o = *(sell.order);
+            memcpy(o, sell.order, sizeof(Order));
             o->quantity = sell.shares;
             sellI++;
             sellOrdersRealTime[thisins].push(o);
-            cout << "add extra sell " << sell.client << " " << sell.shares << endl;
+            cout << "add extra sell " << sell.client << " " << o->quantity << endl;
         }
         while (buyI < buyOrderCnt)
         {
             auto &buy = buyOrdersList[thisins][buyI];
             Order *o = new Order;
-            *o = *(buy.order);
+            memcpy(o, buy.order, sizeof(Order));
             o->quantity = buy.shares;
             buyI++;
             buyOrdersRealTime[thisins].push(o);
-            cout << "add extra buy " << buy.client << " " << buy.shares << endl;
+            cout << "add extra buy " << buy.client << " " << o->quantity << endl;
         }
         cout << thisins << " Sale : " << totalSale << endl;
         res[thisins] = maxAmount;
@@ -324,9 +346,10 @@ inline int testIfMorning(Order order)
     return 1;
 }
 
-void processMorningAuction()
+int processMorningAuction()
 {
-    for (int i = 0; i < mOrders.size(); i++)
+    int i;
+    for (i = 0; i < mOrders.size(); i++)
     {
         auto &oneOrder = mOrders[i];
         if (!testIfMorning(oneOrder))
@@ -370,26 +393,84 @@ void processMorningAuction()
         }
     }
     processAllMorningTransactions(res);
-    for (auto i : mInstruments)
+    // for (auto i : mInstruments)
+    // {
+    //     string name = i.instrumentId;
+    //     while (!buyOrdersRealTime[name].empty())
+    //     {
+    //         auto &i = buyOrdersRealTime[name].top();
+    //         cout << "REALTIME BUY " << i->client << " pri " << i->price << " amout " << i->quantity << endl;
+    //         buyOrdersRealTime[name].pop();
+    //     }
+    // }
+    // for (auto i : mInstruments)
+    // {
+    //     string name = i.instrumentId;
+    //     while (!sellOrdersRealTime[name].empty())
+    //     {
+    //         auto &i = sellOrdersRealTime[name].top();
+    //         cout << "REALTIME SELL " << i->client << " pri " << i->price << " amout " << i->quantity << endl;
+    //         sellOrdersRealTime[name].pop();
+    //     }
+    // }
+    return i;
+}
+
+int processRealTimeTransactions(int start)
+{
+    while (start < mOrders.size())
     {
-        string name = i.instrumentId;
-        while (!buyOrdersRealTime[name].empty())
+        cout << "@" << start << endl;
+        int if_any = 0;
+        for (auto ins : mInstruments)
         {
-            auto &i = buyOrdersRealTime[name].top();
-            buyOrdersRealTime[name].pop();
-            cout << "REALTIME BUY " << i->client << " pri " << i->price << " amout " << i->quantity << endl;
+            string thisins = ins.instrumentId;
+            if (sellOrdersRealTime[thisins].empty() || buyOrdersRealTime[thisins].empty())
+            {
+                cout << thisins << " no order!" << endl;
+                continue;
+            }
+            else
+            {
+                if (sellOrdersRealTime[thisins].top()->price <= buyOrdersRealTime[thisins].top()->price)
+                {
+                    int max_amount = min(sellOrdersRealTime[thisins].top()->quantity, buyOrdersRealTime[thisins].top()->quantity);
+                    auto &sell = sellOrdersRealTime[thisins].top();
+                    auto &buy = buyOrdersRealTime[thisins].top();
+                    cout << "sell " << sell->price << " buy " << buy->price << endl;
+                    sell->quantity -= max_amount;
+                    buy->quantity -= max_amount;
+                    Time time1{sell->hours, sell->mins, sell->secs};
+                    Time time2{buy->hours, buy->mins, buy->secs};
+                    Time maxTime = time1 < time2 ? time2 : time1;
+                    addTransaction(sell->client, buy->client, thisins, max_amount, buy->price, maxTime.hr, maxTime.min, maxTime.sec);
+                    if_any = 1;
+                    if (sellOrdersRealTime[thisins].top()->quantity == 0)
+                    {
+                        sellOrdersRealTime[thisins].pop();
+                    }
+                    if (buyOrdersRealTime[thisins].top()->quantity == 0)
+                    {
+                        buyOrdersRealTime[thisins].pop();
+                    }
+                }
+            }
+        }
+        if (!if_any)
+        {
+            auto &o = mOrders[start];
+            if (o.side[0] == 'S')
+            {
+                sellOrdersRealTime[o.instrument].push(&o);
+            }
+            else
+            {
+                buyOrdersRealTime[o.instrument].push(&o);
+            }
+            start++;
         }
     }
-    for (auto i : mInstruments)
-    {
-        string name = i.instrumentId;
-        while (!sellOrdersRealTime[name].empty())
-        {
-            auto &i = sellOrdersRealTime[name].top();
-            sellOrdersRealTime[name].pop();
-            cout << "REALTIME SELL " << i->client << " pri " << i->price << " amout " << i->quantity << endl;
-        }
-    }
+    return start;
 }
 
 int main()
@@ -401,5 +482,6 @@ int main()
     }
     readInstrumentsCSV("input_instruments.csv", mInstruments);
     readOrdersCSV("input_orders.csv", mOrders);
-    processMorningAuction();
+    int i = processMorningAuction();
+    i = processRealTimeTransactions(i);
 }
