@@ -1,6 +1,6 @@
-#include "csv.cpp"
-#include <algorithm>
-#include <iostream>
+ 
+
+using namespace std;
 
 // Function to find an instrument by its ID
 Instrument* findInstrument(const string& instrumentId, const vector<Instrument>& instruments)
@@ -48,7 +48,7 @@ string processOrder(Order& order, const vector<Client>& clients, const vector<In
         bool currencyFound = false;
         for (const auto& currency : client->currencies)
         {
-            if (currency == instrument->currency)
+            if (currency[0] == instrument->currency[0])
             {
                 currencyFound = true;
                 break;
