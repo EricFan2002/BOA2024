@@ -180,10 +180,49 @@ void testProcessMorningAuction() {
     instrument1.instrumentId = "AAPL";
     mInstruments.push_back(instrument1);
 
-    Order order1 = addOrder("C1", "AAPL", 100, 150, 9, 30, 0);
-    Order order2 = addOrder("C2", "AAPL", 50, 160, 9, 30, 0);
-    Order order3 = addOrder("C3", "AAPL", 80, 140, 9, 30, 0);
-    Order order4 = addOrder("C4", "AAPL", 120, 155, 9, 30, 0);
+    Order order1;
+    order1.orderId = "O1";
+    order1.instrument = "AAPL";
+    order1.client = "C1";
+    order1.side = "BUY";
+    order1.price = 150.0;
+    order1.quantity = 100;
+    order1.hours = 9;
+    order1.mins = 30;
+    order1.secs = 0;
+
+    Order order2;
+    order2.orderId = "O2";
+    order2.instrument = "AAPL";
+    order2.client = "C2";
+    order2.side = "BUY";
+    order2.price = 160.0;
+    order2.quantity = 50;
+    order2.hours = 9;
+    order2.mins = 30;
+    order2.secs = 0;
+
+    Order order3;
+    order3.orderId = "O3";
+    order3.instrument = "AAPL";
+    order3.client = "C3";
+    order3.side = "SELL";
+    order3.price = 140.0;
+    order3.quantity = 80;
+    order3.hours = 9;
+    order3.mins = 30;
+    order3.secs = 0;
+
+    Order order4;
+    order4.orderId = "O4";
+    order4.instrument = "AAPL";
+    order4.client = "C4";
+    order4.side = "SELL";
+    order4.price = 155.0;
+    order4.quantity = 120;
+    order4.hours = 9;
+    order4.mins = 30;
+    order4.secs = 0;
 
     mOrders.push_back(order1);
     mOrders.push_back(order2);
