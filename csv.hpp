@@ -35,10 +35,23 @@ struct Order
     string orderId;
     string instrument;
     int quantity;
+    int quantity_done;
     string client;
     double price;
     string side;
     int valid;
+};
+
+struct Transaction
+{
+    string from;
+    string to;
+    string stock;
+    int hours;
+    int mins;
+    int secs;
+    int amount;
+    double price;
 };
 
 // Function declarations
