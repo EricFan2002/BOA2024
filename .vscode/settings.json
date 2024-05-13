@@ -43,6 +43,7 @@
         "__hash_table": "cpp",
         "unordered_map": "cpp",
         "queue": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "__tree": "cpp"
     }
 }

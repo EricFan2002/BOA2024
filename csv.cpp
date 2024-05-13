@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <float.h>
 #include <vector>
 
 using namespace std;
@@ -146,7 +147,7 @@ void readOrdersCSV(const string &filename, vector<Order> &orders)
             }
             else
             {
-                order.price = INT_MAX;
+                order.price = DBL_MAX;
             }
         }
         else
@@ -199,4 +200,4 @@ Order make_order(const string &time, const string &orderId, const string &instru
     order.price = price;
     order.side = side;
     return order;
-}   
+}
