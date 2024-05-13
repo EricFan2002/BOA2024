@@ -473,6 +473,7 @@ int processRealTimeTransactions(int start)
     return start;
 }
 
+/*
 int main()
 {
     readClientsCSV("input_clients.csv", mClients);
@@ -486,3 +487,4 @@ int main()
     int i = processMorningAuction();
     i = processRealTimeTransactions(i);
 }
+*/
