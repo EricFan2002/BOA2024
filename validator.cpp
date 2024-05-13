@@ -1,6 +1,9 @@
 #include "csv.cpp"
 #include <algorithm>
 #include <iostream>
+#include <numeric>
+
+using namespace std;
 
 // Function to find an instrument by its ID
 Instrument* findInstrument(const string& instrumentId, const vector<Instrument>& instruments)
@@ -48,7 +51,7 @@ string processOrder(Order& order, const vector<Client>& clients, const vector<In
         bool currencyFound = false;
         for (const auto& currency : client->currencies)
         {
-            if (currency == instrument->currency)
+            if (currency[0] == instrument->currency[0])
             {
                 currencyFound = true;
                 break;
@@ -111,7 +114,6 @@ void matchOrders(vector<Order>& orders, const vector<Client>& clients, const vec
     }
 }
 
-/*
 int main()
 {
     vector<Client> clients;
@@ -126,6 +128,10 @@ int main()
     // Match orders
     matchOrders(orders, clients, instruments);
 
+    for (int i = 0; i < orders.size(); i++)
+    {
+        cout << processOrder(orders[i], clients, instruments) << endl;
+    }
+
     return 0;
 }
-*/
