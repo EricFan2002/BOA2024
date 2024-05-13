@@ -61,6 +61,7 @@ Order make_order(const string &time, const string &orderId, const string &instru
 // Function declarations
 void readClientsCSV(const string &filename, vector<Client> &clients);
 void readInstrumentsCSV(const string &filename, vector<Instrument> &instruments);
+void removeLateOrders(vector<Order> &orders);
 void readOrdersCSV(const string &filename, vector<Order> &orders);
 
 #endif // CSV_READER_HPP

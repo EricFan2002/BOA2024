@@ -1,5 +1,5 @@
 #include <iostream>
-#include "csv.hpp"
+#include "csv.cpp"
 #include <queue>
 #include <float.h>
 #include <vector>
@@ -482,6 +482,7 @@ int main()
     }
     readInstrumentsCSV("input_instruments.csv", mInstruments);
     readOrdersCSV("input_orders.csv", mOrders);
+    removeLateOrders(mOrders);
     int i = processMorningAuction();
     i = processRealTimeTransactions(i);
 }

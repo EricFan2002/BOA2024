@@ -1,4 +1,7 @@
- 
+#include <vector>
+#include <string>
+#include <iostream>
+#include "csv.cpp"
 
 using namespace std;
 
@@ -111,7 +114,6 @@ void matchOrders(vector<Order>& orders, const vector<Client>& clients, const vec
     }
 }
 
-/*
 int main()
 {
     vector<Client> clients;
@@ -122,10 +124,9 @@ int main()
     readClientsCSV("input_clients.csv", clients);
     readInstrumentsCSV("input_instruments.csv", instruments);
     readOrdersCSV("input_orders.csv", orders);
-
+    
     // Match orders
     matchOrders(orders, clients, instruments);
 
     return 0;
 }
-*/
