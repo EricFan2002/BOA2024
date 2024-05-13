@@ -45,6 +45,21 @@ int buyOrderCnt = 0;
 int sellOrderAccumulate = 0;
 int buyOrderAccumulate = 0;
 
+int performPositionCheckingSell(Order &order) // return how much can be bought
+{
+    if (clients[order.client].positionCheck == 1)
+    {
+        if (clients[order.client].position.count(order.instrument))
+        {
+            return clients[order.client].position[order.instrument];
+        }
+        else
+            return 0;
+    }
+    else
+        return order.quantity;
+}
+
 double getBestPrice()
 {
     while (!sellOrders.empty())
@@ -52,7 +67,7 @@ double getBestPrice()
         auto order = sellOrders.top();
         sellOrders.pop();
         sellOrdersList[sellOrderCnt].price = order->price;
-        sellOrderAccumulate += order->quantity;
+        sellOrderAccumulate = order->quantity;
         sellOrdersList[sellOrderCnt].shares = sellOrderAccumulate;
         sellOrderCnt++;
         cout << "SELL " << order->price << " at " << order->time << endl;
@@ -62,28 +77,32 @@ double getBestPrice()
         auto order = buyOrders.top();
         buyOrders.pop();
         buyOrdersList[buyOrderCnt].price = order->price;
-        buyOrderAccumulate += order->quantity;
+        buyOrderAccumulate = order->quantity;
         buyOrdersList[buyOrderCnt].shares = buyOrderAccumulate;
         buyOrderCnt++;
         cout << "BUY " << order->price << " at " << order->time << endl;
     }
+
     int sellIndex = 0, buyIndex = 0;
     double bestPrice = 0.0;
     int maxQuantity = 0;
+    int sellTotal = 0;
+    int buyTotal = 0;
     while (sellIndex < sellOrderCnt && buyIndex < buyOrderCnt)
     {
         cout << " buy @ " << buyOrdersList[buyIndex].price << " sell @" << sellOrdersList[sellIndex].price << endl;
         if (buyOrdersList[buyIndex].price >= sellOrdersList[sellIndex].price)
         {
-            int quantity = min(sellOrdersList[sellIndex].shares, buyOrdersList[buyIndex].shares);
+            int quantity = min(sellTotal, buyTotal);
             if (quantity > maxQuantity)
             {
                 maxQuantity = quantity;
                 bestPrice = sellOrdersList[sellIndex].price; // Taking the sell price as the transaction price
-                cout << bestPrice << " is better " << endl;
+                cout << bestPrice << " is better with quantity " << maxQuantity << endl;
             }
-            if (sellOrdersList[sellIndex].shares < buyOrdersList[buyIndex].shares)
+            if (sellTotal < buyTotal)
             {
+
                 sellIndex++;
             }
             else
