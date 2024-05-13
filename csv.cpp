@@ -107,6 +107,19 @@ void readInstrumentsCSV(const string &filename, vector<Instrument> &instruments)
     file.close();
 }
 
+// Remove those orders that exceed 9:30:00 from the orders vector
+void removeLateOrders(vector<Order> &orders)
+{
+    for (int i = 0; i < orders.size(); i++)
+    {
+        if (orders[i].hours > 9 || (orders[i].hours == 9 && orders[i].mins > 30) || (orders[i].hours == 9 && orders[i].mins == 30 && orders[i].secs > 0))
+        {
+            orders.erase(orders.begin() + i);
+            i--;
+        }
+    }
+}
+
 // Function to read and process the orders CSV
 void readOrdersCSV(const string &filename, vector<Order> &orders)
 {
