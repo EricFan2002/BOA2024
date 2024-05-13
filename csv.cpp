@@ -35,14 +35,14 @@ vector<string> split(const string &s, char delimiter)
             }
             else
             {
-                tmpString += getRange(token, 0, token.length() - 1);
+                tmpString += getRange(token, 0, token.length() - 1) + ",";
             }
         }
         else
         {
             if (token[0] == '"')
             {
-                tmpString += getRange(token, 1, token.length());
+                tmpString += getRange(token, 1, token.length()) + ",";
             }
             else
             {
@@ -67,14 +67,17 @@ void readClientsCSV(const string &filename, vector<Client> &clients)
         vector<string> tokens = split(line, ',');
         Client client;
         client.clientId = tokens[0];
-        client.currencies = tokens[1];
+        cout << "DEBUG " << tokens[1] << endl;
+        client.currencies = split(tokens[1], ',');
         client.positionCheck = tokens[2][0] == 'Y' ? 1 : 0;
         client.rating = stoi(tokens[3]);
         clients.push_back(client);
 
         cout
-            << "ClientID: " << client.clientId << ", Currencies: " << client.currencies
-            << ", Position Check: " << client.positionCheck << ", Rating: " << client.rating << endl;
+            << "ClientID: " << client.clientId << ", Currencies: ";
+        for (auto i : client.currencies)
+            cout << i << " | ";
+        cout << ", Position Check: " << client.positionCheck << ", Rating: " << client.rating << endl;
     }
     file.close();
 }

@@ -11,7 +11,7 @@ using namespace std;
 struct Client
 {
     string clientId;
-    string currencies;
+    vector<string> currencies;
     int positionCheck;
     int rating;
     map<string, int> position;
