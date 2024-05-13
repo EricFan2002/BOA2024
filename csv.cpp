@@ -165,3 +165,38 @@ void readOrdersCSV(const string &filename, vector<Order> &orders)
 
     file.close();
 }
+
+// Function to create a client object
+Client make_client(const string &clientId, const string &currencies, const string &positionCheck, int rating)
+{
+    Client client;
+    client.clientId = clientId;
+    client.currencies = split(currencies, ',');
+    client.positionCheck = positionCheck[0] == 'Y' ? 1 : 0;
+    client.rating = rating;
+    return client;
+}
+
+// Function to create an instrument object
+Instrument make_instrument(const string &instrumentId, const string &currency, int lotSize)
+{
+    Instrument instrument;
+    instrument.instrumentId = instrumentId;
+    instrument.currency = currency;
+    instrument.lotSize = lotSize;
+    return instrument;
+}
+
+// Function to create an order object
+Order make_order(const string &time, const string &orderId, const string &instrument, int quantity, const string &client, double price, const string &side)
+{
+    Order order;
+    order.time = time;
+    order.orderId = orderId;
+    order.instrument = instrument;
+    order.quantity = quantity;
+    order.client = client;
+    order.price = price;
+    order.side = side;
+    return order;
+}   

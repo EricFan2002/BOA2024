@@ -54,6 +54,10 @@ struct Transaction
     double price;
 };
 
+Client make_client(const string &clientId, const string &currencies, const string &positionCheck, int rating);
+Instrument make_instrument(const string &instrumentId, const string &currency, int lotSize);
+Order make_order(const string &time, const string &orderId, const string &instrument, int quantity, const string &client, double price, const string &side);
+
 // Function declarations
 void readClientsCSV(const string &filename, vector<Client> &clients);
 void readInstrumentsCSV(const string &filename, vector<Instrument> &instruments);
