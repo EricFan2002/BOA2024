@@ -1,7 +1,4 @@
-#include "csv.cpp"
-#include <algorithm>
-#include <iostream>
-#include <numeric>
+ 
 
 using namespace std;
 
@@ -114,6 +111,7 @@ void matchOrders(vector<Order>& orders, const vector<Client>& clients, const vec
     }
 }
 
+/*
 int main()
 {
     vector<Client> clients;
@@ -128,10 +126,6 @@ int main()
     // Match orders
     matchOrders(orders, clients, instruments);
 
-    for (int i = 0; i < orders.size(); i++)
-    {
-        cout << processOrder(orders[i], clients, instruments) << endl;
-    }
-
     return 0;
 }
+*/

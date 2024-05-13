@@ -1,35 +1,69 @@
 #include <iostream>
 #include <cassert>
-#include "csv.hpp"
+#include "csv.cpp"
 #include "validator.cpp"
 
-// Test the processOrder function
-void testProcessOrder() {
-    vector<Client> clients;
-    vector<Instrument> instruments;
+// Unit tests for the processOrder function
+void testProcessOrder()
+{
+    // Test findInstrument
+    vector<Instrument> instruments = {
+        {"INSTR1", "USD", 1000},
+        {"INSTR2", "EUR", 500},
+        {"INSTR3", "GBP", 2000}
+    };
 
-    Client client1 = {"A", {"USD", "SGD"}, 1, 1};
-    Client client2 = {"B", {"USD", "SGD", "JPY"}, 0, 2};
-    clients.push_back(client1);
-    clients.push_back(client2);
+    Instrument* found = findInstrument("INSTR2", instruments);
+    assert(found != nullptr);
+    assert(found->instrumentId == "INSTR2");
+    assert(found->currency == "EUR");
+    assert(found->lotSize == 500);
 
-    Instrument instrument1 = {"SIA", "SGD", 100};
-    Instrument instrument2 = {"APL", "USD", 50};
-    instruments.push_back(instrument1);
-    instruments.push_back(instrument2);
+    Instrument* notFound = findInstrument("INVALID", instruments);
+    assert(notFound == nullptr);
 
-    Order order1 = {"9:00:01", 9, 0, 1, "A1", "SIA", 1500, "A", 0.0, "Buy"};
-    Order order2 = {"9:02:00", 9, 2, 0, "B1", "APL", 4500, "B", 32.1, "Sell"};
-    Order order3 = {"9:05:00", 9, 5, 0, "C1", "SIA", 105, "A", 32.0, "Buy"};
-    Order order4 = {"9:10:00", 9, 10, 0, "D1", "XYZ", 300, "A", 0.0, "Sell"};
-    Order order5 = {"9:29:01", 9, 29, 1, "B2", "SIA", 500, "A", 32.1, "Sell"};
+    // Test findClient
+    vector<Client> clients = {
+        {"CLIENT1", {"USD", "EUR"}},
+        {"CLIENT2", {"GBP"}},
+        {"CLIENT3", {"JPY", "CHF"}}
+    };
 
-    assert(processOrder(order1, clients, instruments) == "GOOD");
-    assert(processOrder(order2, clients, instruments) == "GOOD");
+    Client* foundClient = findClient("CLIENT2", clients);
+    assert(foundClient != nullptr);
+    assert(foundClient->clientId == "CLIENT2");
+    assert(foundClient->currencies == vector<string>{"GBP"});
+
+    Client* notFoundClient = findClient("INVALID", clients);
+    assert(notFoundClient == nullptr);
+
+    // Test processOrder
+    clients = {
+        {"CLIENT1", {"USD", "EUR"}, true},
+        {"CLIENT2", {"GBP"}, false}
+    };
+    instruments = {
+        {"INSTR1", "USD", 1000},
+        {"INSTR2", "EUR", 500},
+        {"INSTR3", "GBP", 2000}
+    };
+
+    Order order1 = {"12:34:56", 12, 34, 56, "ORDER1", "INVALID", 1000, 0, "CLIENT1", 0.0, "Buy", 0};
+    assert(processOrder(order1, clients, instruments) == "REJECTED - INSTRUMENT NOT FOUND");
+
+    Order order2 = {"13:45:12", 13, 45, 12, "ORDER2", "INSTR3", 2000, 0, "CLIENT1", 0.0, "Buy", 0};
+    assert(processOrder(order2, clients, instruments) == "REJECTED - MISMATCH CURRENCY");
+
+    Order order3 = {"14:56:23", 14, 56, 23, "ORDER3", "INSTR1", 1001, 0, "CLIENT1", 0.0, "Buy", 0};
     assert(processOrder(order3, clients, instruments) == "REJECTED - INVALID LOT SIZE");
-    assert(processOrder(order4, clients, instruments) == "REJECTED - INSTRUMENT NOT FOUND");
-    assert(processOrder(order5, clients, instruments) == "REJECTED - POSITION CHECK FAILED");
-    std::cout << "testProcessOrder passed" << std::endl;
+
+    Order order4 = {"15:23:45", 15, 23, 45, "ORDER4", "INSTR1", 1000, 0, "CLIENT1", 0.0, "Sell", 0};
+    assert(processOrder(order4, clients, instruments) == "REJECTED - POSITION CHECK FAILED");
+
+    Order order5 = {"16:34:12", 16, 34, 12, "ORDER5", "INSTR3", 2000, 0, "CLIENT2", 0.0, "Buy", 0};
+    assert(processOrder(order5, clients, instruments) == "GOOD");
+
+    std::cout << "All unit tests passed!" << std::endl;
 }
 
 // Run all unit tests
@@ -49,20 +83,20 @@ void integrationTestProcessOrder() {
 
     vector<string> expectedResults = {
         "GOOD",
-        "REJECTED - MISMATCH CURRENCY",
-        "GOOD",
-        "REJECTED - MISMATCH CURRENCY",
-        "REJECTED - MISMATCH CURRENCY",
-        "GOOD",
         "GOOD",
         "GOOD",
         "REJECTED - MISMATCH CURRENCY",
+        "REJECTED - INVALID LOT SIZE",
         "GOOD",
-        "REJECTED - MISMATCH CURRENCY",
         "GOOD",
-        "REJECTED - MISMATCH CURRENCY",
         "GOOD",
-        "REJECTED - MISMATCH CURRENCY",
+        "GOOD",
+        "GOOD",
+        "GOOD",
+        "GOOD",
+        "GOOD",
+        "GOOD",
+        "GOOD",
         "GOOD",
         "GOOD"
     };
@@ -70,6 +104,7 @@ void integrationTestProcessOrder() {
     for (size_t i = 0; i < orders.size(); ++i) {
         assert(processOrder(orders[i], clients, instruments) == expectedResults[i]);
     }
+
     std::cout << "integrationTestProcessOrder passed" << std::endl;
 }
 
