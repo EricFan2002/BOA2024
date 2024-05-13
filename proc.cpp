@@ -39,25 +39,27 @@ struct OrderAccumulate
 {
     int shares;
     float price;
+    string client;
+    string stock;
 } sellOrdersList[1000000], buyOrdersList[1000000];
 int sellOrderCnt = 0;
 int buyOrderCnt = 0;
 int sellOrderAccumulate = 0;
 int buyOrderAccumulate = 0;
 
-int performPositionCheckingSell(Order &order) // return how much can be bought
+int performPositionCheckingSell(string client, string stock, int amount) // return how much can be bought
 {
-    if (clients[order.client].positionCheck == 1)
+    if (clients[client].positionCheck == 1)
     {
-        if (clients[order.client].position.count(order.instrument))
+        if (clients[client].position.count(stock))
         {
-            return clients[order.client].position[order.instrument];
+            return clients[client].position[stock];
         }
         else
             return 0;
     }
     else
-        return order.quantity;
+        return amount;
 }
 
 double getBestPrice()
@@ -67,8 +69,9 @@ double getBestPrice()
         auto order = sellOrders.top();
         sellOrders.pop();
         sellOrdersList[sellOrderCnt].price = order->price;
-        sellOrderAccumulate = order->quantity;
-        sellOrdersList[sellOrderCnt].shares = sellOrderAccumulate;
+        sellOrdersList[sellOrderCnt].client = order->client;
+        sellOrdersList[sellOrderCnt].stock = order->instrument;
+        sellOrdersList[sellOrderCnt].shares = order->quantity;
         sellOrderCnt++;
         cout << "SELL " << order->price << " at " << order->time << endl;
     }
@@ -77,44 +80,58 @@ double getBestPrice()
         auto order = buyOrders.top();
         buyOrders.pop();
         buyOrdersList[buyOrderCnt].price = order->price;
-        buyOrderAccumulate = order->quantity;
-        buyOrdersList[buyOrderCnt].shares = buyOrderAccumulate;
+        buyOrdersList[buyOrderCnt].client = order->client;
+        buyOrdersList[buyOrderCnt].stock = order->instrument;
+        buyOrdersList[buyOrderCnt].shares = order->quantity;
         buyOrderCnt++;
         cout << "BUY " << order->price << " at " << order->time << endl;
     }
-
     int sellIndex = 0, buyIndex = 0;
+    int sellAvail = performPositionCheckingSell(sellOrdersList[0].client, sellOrdersList[0].stock, sellOrdersList[0].shares);
+    sellOrderAccumulate += sellAvail;
+    buyOrderAccumulate += buyOrdersList[0].shares;
     double bestPrice = 0.0;
     int maxQuantity = 0;
-    int sellTotal = 0;
-    int buyTotal = 0;
     while (sellIndex < sellOrderCnt && buyIndex < buyOrderCnt)
     {
-        cout << " buy @ " << buyOrdersList[buyIndex].price << " sell @" << sellOrdersList[sellIndex].price << endl;
+        cout << " TRADE BUY @ " << buyOrdersList[buyIndex].price << " sell @" << sellOrdersList[sellIndex].price << endl;
+        cout << "    AMOUNT " << sellOrderAccumulate << " | " << buyOrderAccumulate << endl;
         if (buyOrdersList[buyIndex].price >= sellOrdersList[sellIndex].price)
         {
-            int quantity = min(sellTotal, buyTotal);
+            int quantity = min(sellOrderAccumulate, buyOrderAccumulate);
             if (quantity > maxQuantity)
             {
                 maxQuantity = quantity;
                 bestPrice = sellOrdersList[sellIndex].price; // Taking the sell price as the transaction price
                 cout << bestPrice << " is better with quantity " << maxQuantity << endl;
             }
-            if (sellTotal < buyTotal)
+            if (sellOrderAccumulate < buyOrderAccumulate)
             {
-
                 sellIndex++;
+                if (sellIndex >= sellOrderCnt)
+                    break;
+                int sellAvail = performPositionCheckingSell(sellOrdersList[sellIndex].client, sellOrdersList[sellIndex].stock, sellOrdersList[sellIndex].shares);
+                sellOrderAccumulate += sellAvail;
             }
             else
             {
                 buyIndex++;
+                if (buyIndex >= buyOrderCnt)
+                    break;
+                buyOrderAccumulate += buyOrdersList[buyIndex].shares;
+                clients[buyOrdersList[buyIndex].client].position[buyOrdersList[buyIndex].stock] += buyOrdersList[buyIndex].shares;
             }
         }
         else
         {
             sellIndex++; // Increase sell index if the sell price is higher than the buy price
+            if (sellIndex >= sellOrderCnt)
+                break;
+            int sellAvail = performPositionCheckingSell(sellOrdersList[sellIndex].client, sellOrdersList[sellIndex].stock, sellOrdersList[sellIndex].shares);
+            sellOrderAccumulate += sellAvail;
         }
     }
+    cout << "@ " << bestPrice << " match " << maxQuantity << endl;
     return bestPrice;
 }
 
